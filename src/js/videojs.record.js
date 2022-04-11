@@ -557,9 +557,9 @@ class Record extends Plugin {
                 navigator.mediaDevices.getUserMedia({
                     audio: this.recordAudio,
                     video: this.recordVideo
-                }).then(
-                    this.onDeviceReady.bind(this)
-                ).catch(
+                }).then((stream) => {
+                    this.onDeviceReady.bind(this)(this.videoRecorderType && this.videoRecorderType.name === 'MultiStreamRecorder' ? [stream] : stream);
+                }).catch(
                     this.onDeviceError.bind(this)
                 );
                 break;
@@ -619,8 +619,14 @@ class Record extends Plugin {
         this._deviceActive = true;
 
         // stop previous stream if it is active
-        if (this.stream !== undefined && this.stream.active) {
+        if (this.stream !== undefined && this.stream.active && !Array.isArray(this.stream)) {
             this.stream.stop();
+        } else if (Array.isArray(this.stream)) {
+            this.stream.forEach(stream => {
+                if (stream !== undefined && stream.active) {
+                    stream.stop();
+                }
+            });
         }
 
         // store reference to stream for stopping etc.
@@ -798,7 +804,7 @@ class Record extends Plugin {
                     this.onLeavePiPHandler);
             }
             // load stream
-            this.load(this.stream);
+            this.loadStream();
 
             // stream loading is async, so we wait until it's ready to play
             // the stream
@@ -1742,8 +1748,18 @@ class Record extends Plugin {
         this.removeRecording();
 
         // start or resume live preview
-        this.load(this.stream);
+        this.loadStream();
         this.mediaElement.play();
+    }
+
+    loadStream() {
+        // load stream
+        if (this.videoRecorderType && this.videoRecorderType.name === 'MultiStreamRecorder' &&
+            Array.isArray(this.stream) && this.stream.length > 0) {
+            this.load(this.stream[0]);
+        } else {
+            this.load(this.stream);
+        }
     }
 
     /**

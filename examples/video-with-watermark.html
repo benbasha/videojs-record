@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Video with watermark Example - Record Plugin for Video.js</title>
+
+  <link href="../node_modules/video.js/dist/video-js.min.css" rel="stylesheet">
+  <link href="../dist/css/videojs.record.css" rel="stylesheet">
+  <link href="assets/css/examples.css" rel="stylesheet">
+
+  <script src="../node_modules/video.js/dist/video.min.js"></script>
+  <script src="../node_modules/recordrtc/RecordRTC.js"></script>
+  <script src="../node_modules/webrtc-adapter/out/adapter.js"></script>
+
+  <script src="../dist/videojs.record.js"></script>
+
+  <script src="browser-workarounds.js"></script>
+
+  <style>
+  /* change player background color */
+  #myVideo {
+      background-color: #1a535c;
+  }
+  </style>
+</head>
+<body>
+
+<video id="myVideo" playsinline class="video-js vjs-default-skin"></video>
+
+<script>
+const img = new Image();
+let watermark = null;
+img.onload = function() {
+    watermark = img;
+}
+img.src = "assets/bigvu-logo.svg";
+
+/* eslint-disable */
+var options = {
+    controls: true,
+    autoplay: false,
+    fluid: false,
+    loop: false,
+    width: 960,
+    height: 640,
+    bigPlayButton: false,
+    controlBar: {
+        volumePanel: false
+    },
+    plugins: {
+        record: {
+            audio: true,
+            video: {
+                width: 1280,
+                height: 720,
+                frameRate: 30
+            },
+            frameWidth: 1280,
+            frameHeight: 720,
+            debug: true,
+            videoMimeType: 'video/webm;codecs=vp8',
+            videoRecorderType: MultiStreamRecorder
+        }
+    },
+    errorDisplay: true
+};
+
+// apply some workarounds for opera browser
+applyVideoWorkaround();
+
+var player = videojs('myVideo', options, function() {
+    // print version information at startup
+    var msg = 'Using video.js ' + videojs.VERSION +
+        ' with videojs-record ' + videojs.getPluginVersion('record') +
+        ' and recordrtc ' + RecordRTC.version;
+    videojs.log(msg);
+});
+
+// error handling
+player.on('deviceError', function() {
+    console.warn('device error:', player.deviceErrorCode);
+});
+
+player.on('error', function(element, error) {
+    console.error(error);
+});
+
+let stream;
+let moveBottom = false;
+// user clicked the record button and started recording
+player.on('startRecord', function() {
+    console.log('started recording!');
+
+    if (!stream) {
+        stream = player.record().stream[0]
+    }
+
+    stream.onRender = function(context, x, y, width, height) {
+        if (watermark) {
+            const imageWidth = watermark.width * 4, imageHeight = watermark.height * 4;
+            if (moveBottom) {
+                context.drawImage(watermark, width - imageWidth - 20, height - imageHeight - 20, imageWidth, imageHeight)
+            } else {
+                context.drawImage(watermark, 20, 20, imageWidth, imageHeight)
+            }
+        }
+    };
+
+    setTimeout(function() {
+        moveBottom = true;
+    }, 3000)
+
+});
+
+// user completed recording and stream is available
+player.on('finishRecord', function() {
+    // the blob object contains the recorded data that
+    // can be downloaded by the user, stored on server etc.
+    console.log('finished recording: ', player.recordedData);
+});
+
+</script>
+
+</body>
+</html>
