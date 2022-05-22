@@ -1027,9 +1027,18 @@ class Record extends Plugin {
                 this.surfer.surfer.microphone.stopDevice();
                 return;
             }
-            this.stream.getTracks().forEach((stream) => {
-                stream.stop();
-            });
+
+            if (Array.isArray(this.stream)) {
+                this.stream.forEach(stream => {
+                    stream.getTracks().forEach((track) => {
+                        track.stop();
+                    })
+                });
+            } else {
+                this.stream.getTracks().forEach((stream) => {
+                    stream.stop();
+                });
+            }
         }
     }
 
