@@ -30,6 +30,7 @@ const Plugin = videojs.getPlugin('plugin');
 const Player = videojs.getComponent('Player');
 
 const AUTO = 'auto';
+const MULTI_STREAM_RECORDER = 'MultiStreamRecorder';
 
 /**
  * Record audio/video/images using the Video.js player.
@@ -558,7 +559,7 @@ class Record extends Plugin {
                     audio: this.recordAudio,
                     video: this.recordVideo
                 }).then((stream) => {
-                    this.onDeviceReady.bind(this)(this.videoRecorderType && this.videoRecorderType.name === 'MultiStreamRecorder' ? [stream] : stream);
+                    this.onDeviceReady.bind(this)(this.videoRecorderType.name === MULTI_STREAM_RECORDER ? [stream] : stream);
                 }).catch(
                     this.onDeviceError.bind(this)
                 );
@@ -1754,7 +1755,7 @@ class Record extends Plugin {
 
     loadStream() {
         // load stream
-        if (this.videoRecorderType && this.videoRecorderType.name === 'MultiStreamRecorder' &&
+        if (this.videoRecorderType.name === MULTI_STREAM_RECORDER &&
             Array.isArray(this.stream) && this.stream.length > 0) {
             this.load(this.stream[0]);
         } else {
