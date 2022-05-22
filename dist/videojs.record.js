@@ -1,6 +1,6 @@
 /*!
  * videojs-record
- * @version 4.6.0
+ * @version 4.6.2
  * @see https://github.com/collab-project/videojs-record
  * @copyright 2014-2022 Collab
  * @license MIT
@@ -3162,6 +3162,7 @@ var Plugin = _video.default.getPlugin('plugin');
 var Player = _video.default.getComponent('Player');
 
 var AUTO = 'auto';
+var MULTI_STREAM_RECORDER = 'MultiStreamRecorder';
 
 var Record = function (_Plugin) {
   (0, _inherits2.default)(Record, _Plugin);
@@ -3570,7 +3571,7 @@ var Record = function (_Plugin) {
             audio: this.recordAudio,
             video: this.recordVideo
           }).then(function (stream) {
-            _this3.onDeviceReady.bind(_this3)(_this3.videoRecorderType && _this3.videoRecorderType.name === 'MultiStreamRecorder' ? [stream] : stream);
+            _this3.onDeviceReady.bind(_this3)(_this3.videoRecorderType.name === MULTI_STREAM_RECORDER ? [stream] : stream);
           }).catch(this.onDeviceError.bind(this));
           break;
 
@@ -3896,9 +3897,17 @@ var Record = function (_Plugin) {
           return;
         }
 
-        this.stream.getTracks().forEach(function (stream) {
-          stream.stop();
-        });
+        if (Array.isArray(this.stream)) {
+          this.stream.forEach(function (stream) {
+            stream.getTracks().forEach(function (track) {
+              track.stop();
+            });
+          });
+        } else {
+          this.stream.getTracks().forEach(function (stream) {
+            stream.stop();
+          });
+        }
       }
     }
   }, {
@@ -4359,7 +4368,7 @@ var Record = function (_Plugin) {
   }, {
     key: "loadStream",
     value: function loadStream() {
-      if (this.videoRecorderType && this.videoRecorderType.name === 'MultiStreamRecorder' && Array.isArray(this.stream) && this.stream.length > 0) {
+      if (this.videoRecorderType.name === MULTI_STREAM_RECORDER && Array.isArray(this.stream) && this.stream.length > 0) {
         this.load(this.stream[0]);
       } else {
         this.load(this.stream);
@@ -4543,7 +4552,7 @@ var Record = function (_Plugin) {
 }(Plugin);
 
 exports.Record = Record;
-Record.VERSION = "4.6.0";
+Record.VERSION = "4.6.2";
 _video.default.Record = Record;
 
 if (_video.default.getPlugin('record') === undefined) {

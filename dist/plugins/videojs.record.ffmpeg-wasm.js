@@ -1,6 +1,6 @@
 /*!
  * ffmpeg-wasm plugin for videojs-record
- * @version 4.6.0
+ * @version 4.6.2
  * @see https://github.com/collab-project/videojs-record
  * @copyright 2014-2022 Collab
  * @license MIT

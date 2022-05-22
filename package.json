@@ -1,6 +1,6 @@
 {
   "name": "videojs-record",
-  "version": "4.6.1",
+  "version": "4.6.2",
   "description": "A video.js plugin for recording audio/video/image files.",
   "author": "Collab",
   "license": "MIT",
